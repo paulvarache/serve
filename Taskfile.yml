@@ -1,0 +1,20 @@
+version: 2
+
+vars:
+  APP_NAME: serve
+  HASH: $(git rev-parse --short HEAD)
+  VERSION: 0.0.0
+  OUTPUT: "{{.APP_NAME}}_{{OS}}_{{ARCH}}"
+
+tasks:
+  build:release:
+    cmds:
+      - go build -ldflags="-X 'main.BuildVersion={{.VERSION}}' -X 'main.BuildHash={{.HASH}}'" -o dist/{{.APP_NAME}}{{exeExt}}
+      - upx --brute {{.APP_NAME}}{{exeExt}}
+    env:
+      GOOS: "{{OS}}"
+
+  get-output:
+    cmds:
+      - echo {{.OUTPUT}}
+    silent: true
