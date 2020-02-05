@@ -10,7 +10,7 @@ tasks:
   build:release:
     cmds:
       - go build -ldflags="-X 'main.BuildVersion={{.VERSION}}' -X 'main.BuildHash={{.HASH}}'" -o dist/{{.APP_NAME}}{{exeExt}}
-      - upx --brute {{.APP_NAME}}{{exeExt}}
+      # - upx --brute {{.APP_NAME}}{{exeExt}}
     env:
       GOOS: "{{OS}}"
 
