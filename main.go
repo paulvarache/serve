@@ -56,6 +56,7 @@ func main() {
 	if opts.Log {
 		rootHandler = middlewares.LogMiddleware(rootHandler)
 	}
+	rootHandler = middlewares.CorsMiddleware(rootHandler)
 	listener, err := net.Listen("tcp", fmt.Sprintf("%s:%d", opts.Hostname, opts.Port))
 	if err != nil {
 		panic(err)

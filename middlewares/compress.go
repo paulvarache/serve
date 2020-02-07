@@ -1,10 +1,13 @@
 package middlewares
 
 import (
+	"compress/flate"
 	"compress/gzip"
 	"io"
 	"net/http"
 	"strings"
+
+	"github.com/andybalholm/brotli"
 )
 
 type CompressWriter struct {
@@ -29,20 +32,43 @@ func (c CompressWriter) Write(d []byte) (int, error) {
 	return total, nil
 }
 
+func requestAcceptsBrotli(r *http.Request) bool {
+	return strings.Contains(r.Header.Get("Accept-Encoding"), "br")
+}
+
 func requestAcceptsGzip(r *http.Request) bool {
 	return strings.Contains(r.Header.Get("Accept-Encoding"), "gzip")
 }
 
+func requestAcceptsDeflate(r *http.Request) bool {
+	return strings.Contains(r.Header.Get("Accept-Encoding"), "deflate")
+}
+
 func CompressMiddleware(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		if !requestAcceptsGzip(r) {
+		var out io.WriteCloser = nil
+		var cType string = ""
+		if requestAcceptsBrotli(r) {
+			out = brotli.NewWriter(w)
+			cType = "br"
+		} else if requestAcceptsGzip(r) {
+			out = gzip.NewWriter(w)
+			cType = "gzip"
+		} else if requestAcceptsDeflate(r) {
+			var err error
+			out, err = flate.NewWriter(w, 0)
+			if err != nil {
+				panic(err)
+			}
+			cType = "deflate"
+		}
+		if out == nil {
 			next.ServeHTTP(w, r)
 			return
 		}
-		out := gzip.NewWriter(w)
 		defer out.Close()
 		compressWriter := CompressWriter{w: w, out: out, total: 0}
-		w.Header().Set("Content-Encoding", "gzip")
+		w.Header().Set("Content-Encoding", cType)
 		next.ServeHTTP(compressWriter, r)
 	})
 }
