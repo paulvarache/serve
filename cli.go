@@ -1,8 +1,9 @@
 package main
 
-import "flag"
-
-import "os"
+import (
+	"flag"
+	"os"
+)
 
 type CliOptions struct {
 	SpaIndex string
@@ -10,6 +11,8 @@ type CliOptions struct {
 	Open     bool
 	Port     int
 	Hostname string
+	Log      bool
+	Compress bool
 }
 
 func FlagString(target *string, name string, shorthand string, defaultVal string, usage string) {
@@ -38,5 +41,7 @@ func NewCliOptions() *CliOptions {
 		Open:     false,
 		Port:     8000,
 		Hostname: "localhost",
+		Log:      false,
+		Compress: false,
 	}
 }
