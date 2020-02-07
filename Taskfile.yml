@@ -3,7 +3,7 @@ version: 2
 vars:
   APP_NAME: serve
   HASH: $(git rev-parse --short HEAD)
-  VERSION: 0.0.0
+  VERSION: $(git describe --tags --abbrev=0)
   OUTPUT: "{{.APP_NAME}}_{{OS}}_{{ARCH}}"
 
 tasks:
